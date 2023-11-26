@@ -16,7 +16,7 @@ class pzNpz(Dataset):
 
     def __getitem__(self, idx):
         filename = self.labels.iloc[idx]['Filename']
-        npz = np.load(os.path.join(self.data_dir, filename))
+        npz = np.load(os.path.join(self.data_dir, (filename + ".npz")))
         data = np.asarray([npz["arr_0"], npz["arr_1"]])
 
         if self.transform:
@@ -36,7 +36,7 @@ class pzImg(Dataset):
 
     def __getitem__(self, idx):
         filename = self.labels.iloc[idx]['Filename']
-        filename = os.path.join(self.data_dir, (filename[:-4] + ".png"))
+        filename = os.path.join(self.data_dir, (filename + ".png"))
         data = cv2.imread(filename) 
         if self.transform:
             data = self.transform(data)
