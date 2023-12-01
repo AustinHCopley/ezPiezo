@@ -45,10 +45,10 @@ def procedure(chord):
 	time.sleep(1)
 	print('1')
 	time.sleep(1)
-	start = time.time()
+	start = time.perf_counter()
 	piezo.setTime(start)
 	print('start')
-	while time.time() - start < 3:
+	while time.perf_counter() - start < 3:
 		piezo.read()
 	print('done')
 	piezo.save(chord)

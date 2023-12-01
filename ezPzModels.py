@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.functional as F
 
 class ezPzLSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes, dropout=0.0):
@@ -13,6 +14,38 @@ class ezPzLSTM(nn.Module):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         out, _ = self.lstm(x, (h0, c0))
+        out = self.fc(out[:, -1, :])
+        return out
+    
+class ezPzAttn(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, num_classes):
+        super(ezPzAttn, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.attn = nn.Linear(hidden_size, 1)
+        self.fc = nn.Linear(hidden_size, num_classes)
+
+    def forward(self, x):
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        out, _ = self.lstm(x, (h0, c0))
+        attn_weights = F.softmax(self.attn(out), dim=1)
+        attn_out = torch.sum(attn_weights * out, dim=1)
+        out = self.fc(attn_out)
+        return out
+    
+class ezPzGRU(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, num_classes):
+        super(ezPzGRU, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.gru = nn.GRU(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_size, num_classes)
+
+    def forward(self, x):
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        out, _ = self.gru(x, h0)
         out = self.fc(out[:, -1, :])
         return out
     
