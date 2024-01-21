@@ -30,7 +30,7 @@ class ezPzAttn(nn.Module):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         out, _ = self.lstm(x, (h0, c0))
-        attn_weights = F.softmax(self.attn(out), dim=1)
+        attn_weights = torch.softmax(self.attn(out), dim=1)
         attn_out = torch.sum(attn_weights * out, dim=1)
         out = self.fc(attn_out)
         return out
